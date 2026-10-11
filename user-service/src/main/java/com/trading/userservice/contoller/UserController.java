@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/v1/users")
 @Slf4j
@@ -37,7 +39,24 @@ public class UserController {
     }
 
     @GetMapping("/{id}") // for internal calls
-    public ResponseEntity<UserResponse> profile(@PathVariable String id){
+    public ResponseEntity<UserResponse> profileForInternalUse(@PathVariable String id){
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
+    @PostMapping("/{userId}/funds/add")
+    public ResponseEntity<AuthResponse> addFunds(@PathVariable String userId , @RequestParam BigDecimal amount){
+        return ResponseEntity.ok(userService.addFunds(userId, amount ));
+    }
+
+    @PostMapping("/{userId}/funds/deduct")
+    public ResponseEntity<AuthResponse> deductFunds(@PathVariable String userId , @RequestParam BigDecimal amount){
+        return ResponseEntity.ok(userService.deductFunds(userId , amount));
+    }
+
+    @PostMapping("/{userId}/funds/credit")
+    public ResponseEntity<AuthResponse> creditFunds(@PathVariable String userId , @RequestParam BigDecimal amount){
+        return ResponseEntity.ok(userService.creditFunds(userId , amount));
+    }
+
+
 }
