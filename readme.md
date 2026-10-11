@@ -30,43 +30,34 @@ It supports user authentication, fund management, real-time market price streami
 
 **Architecture**
 ![architecture-diagram.png](architecture-diagram.png)
-
 Requests enter through the API Gateway, which validates the JWT before routing to the appropriate service. \
 Services communicate asynchronously through Kafka for order and account events, while Redis holds hot data such as the latest stock prices.
 Live prices reach clients through WebSocket from the Market Data Service.
 
 **Services**
 
-Api gateway:
+1. Api gateway:
+ Single entry point, routing, JWT validation
 
-Single entry point, routing, JWT validation
+2. User service: 
+ login , register , wallet
 
-User service:
+3. Market Data Service: This is where our web socket lives and it broadcast it in every 2 seconds and store the latest price into the Redis.
 
-login , register , wallet
+4. Order service:
+ Buy / sell happen using this service and it make 3 calls
+   1. To the market date service to the latest price.
+   2. To the AI service to detect the fraud
+   3. Detect the fund for successful trade.
 
-Market Data Service:
+5. Portfolio service:
+ This will get the notification from kafka for a success trade and it will calculate the live profit and loss from the market data service price
 
-This is where our web socket lives and it broadcast it in every 2 seconds and store the latest price into the Redis.
+6. Notification service:
+ Consume events and notify users.
 
-Order service:
-
-Buy / sell happen using this service and it make 3 calls
-1. To the market date service to the latest price.
-2. To the AI service to detect the fraud
-3. Detect the fund for successful trade.
-
-Portfolio service:
-
-This will get the notification from kafka for a success trade and it will calculate the live profit and loss from the market data service price
-
-Notification service:
-
-Consume events and notify users.
-
-AI service: 
-
-Powered by claude API for fraud detection and identify suspicious transactions.
+7. AI service:
+ Powered by claude API for fraud detection and identify suspicious transactions.
 
 **Order Flow**
 
