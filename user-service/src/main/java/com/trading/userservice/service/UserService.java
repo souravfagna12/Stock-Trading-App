@@ -1,6 +1,7 @@
 package com.trading.userservice.service;
 
 import com.trading.userservice.dto.AuthResponse;
+import com.trading.userservice.dto.LoginRequest;
 import com.trading.userservice.dto.RegisterRequest;
 import com.trading.userservice.entity.User;
 import com.trading.userservice.repository.UserRepository;
@@ -19,10 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +74,25 @@ public class UserService {
         String refreshToken = generateRefreshToken(savedUser.getId());
 
         return buildAuthResponse(savedUser, token, refreshToken);
+    }
+
+    public AuthResponse login(LoginRequest loginRequest){
+        log.info("login request from: {}", loginRequest.getEmail());
+
+        User user = (userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("user not found for this email: " + loginRequest.getEmail())));
+
+        if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
+            throw new RuntimeException("invalid credentials");
+        }
+
+        log.info("login successful: {}", user.getId());
+
+        String token = generateAccessToken(user.getId(), user.getEmail());
+        String refreshToken = generateRefreshToken(user.getId());
+
+        return buildAuthResponse(user, token, refreshToken);
+
     }
 
     private AuthResponse buildAuthResponse(User savedUser, String token, String refreshToken) {
